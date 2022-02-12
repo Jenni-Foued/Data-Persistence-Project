@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -18,7 +19,13 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    public string playerName;
+
+    private void Awake()
+    {
+        playerName = PlayerPrefs.GetString("playerName");
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -62,10 +69,38 @@ public class MainManager : MonoBehaviour
         }
     }
 
+    [System.Serializable]
+    class SaveData
+    {
+        public string playerName;
+    }
+
+    public void SaveName()
+    {
+        SaveData data = new SaveData();
+        data.playerName = playerName;
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/highscore.json", json);
+    }
+
+    public void LoadName()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            playerName = data.playerName;
+        }
+    }
+
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Scord : {playerName} : {m_Points}";
     }
 
     public void GameOver()
